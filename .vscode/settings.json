@@ -1,0 +1,52 @@
+{
+    "files.associations": {
+        "*.css": "tailwindcss",
+        "*.yaml": "plush"
+    },
+    "editor.quickSuggestions": {
+        "strings": true
+    },
+    "[python]": {
+        "editor.codeActionsOnSave": {
+            "source.organizeImports": true,
+            "source.fixAll": true
+        },
+        "editor.defaultFormatter": "ms-python.black-formatter"
+    },
+    "python.linting.enabled": true,
+    "python.linting.lintOnSave": true,
+    "python.linting.mypyEnabled": false,
+    "python.linting.mypyArgs": [
+        "--follow-imports=silent",
+        "--ignore-missing-imports",
+        "--show-column-numbers",
+        "--no-pretty",
+        "--config-file=${workspaceFolder}/pyproject.toml"
+    ],
+    "python.linting.pylintEnabled": true,
+    "python.linting.pylintArgs": [
+        "--rcfile=${workspaceFolder}/.pylintrc"
+    ],
+    "python.formatting.provider": "black",
+    "editor.formatOnSave": true,
+    "[plush]": {
+        "editor.formatOnSave": false
+    },
+    "python.testing.pytestArgs": [
+        "tests"
+    ],
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true,
+    "python.testing.cwd": "${workspaceFolder}",
+    "isort.args": [
+        "--profile",
+        "black"
+    ],
+    "python.analysis.extraPaths": [
+        "${workspaceFolder}/backend"
+    ],
+    "files.autoSave": "onFocusChange",
+    "python.analysis.importFormat": "relative",
+    "D2.previewLayout": "elk",
+    "D2.previewSketch": true
+}
