@@ -21,7 +21,7 @@
         "--ignore-missing-imports",
         "--show-column-numbers",
         "--no-pretty",
-        "--config-file=${workspaceFolder}/pyproject.toml"
+        "--config-file=${workspaceFolder}/pyrushguard.toml"
     ],
     "python.linting.pylintEnabled": true,
     "python.linting.pylintArgs": [

@@ -3,15 +3,18 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-name = "project"
+name = "rushguard"
 version = "0.1.0"
 description = ""
-authors = ["lesimor <lesimor@naver.com>"]
+authors = ["byungwook-kang <bw.kang@kaist.ac.kr>"]
 readme = "README.md"
-packages = [{include = "project"}]
+packages = [{include = "rushguard"}]
 
 [tool.poetry.dependencies]
 python = "^3.9"
+kubernetes = "^27.2.0"
+pydantic-settings = "^2.0.3"
+requests = "^2.31.0"
 
 [tool.poetry.group.dev.dependencies]
 autoflake = ">=1.4.0,<1.5.0"
@@ -24,6 +27,7 @@ mypy = "1.2.0"
 
 [tool.poetry.group.test.dependencies]
 pytest = "*"
+locust = "^2.16.1"
 
 [tool.mypy]
 ignore_missing_imports = true

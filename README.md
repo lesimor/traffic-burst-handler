@@ -13,26 +13,33 @@ poetry config virtualenvs.in-project true --local
 poetry config virtualenvs.path .venv --local
 ```
 
-2. Install packages
+2. Create `.env` file
+
+```
+RUSHGUARD_PROMETHEUS_URL="http://kaist-ingress-prometheus.dchain-connect.com"
+RUSHGUARD_KUBE_CONTEXT="nks_kr_kaist-cluster_fe68cb8f-65ef-42a2-a3c4-deb608eacbce"
+RUSHGUARD_KUBE_NAMESPACE="webeng"
+RUSHGUARD_KUBE_DEPLOYMENT="php-apache"
+RUSHGUARD_MAX_REPLICAS=10
+RUSHGUARD_INGRESS_NAME=php-apache-ingress
+RUSHGUARD_INTERVAL_UNIT="2m"
+RUSHGUARD_RESPONSE_TIME_THRESHOLD=1.0
+```
+
+3. Install packages
 
 ```
 poetry install
 ```
 
-3. Install pre-commit
+4. Install pre-commit
 
 ```
 pre-commit install
 ```
 
-4. Test
+5. Test
 
 ```
 poetry run pytest
 ```
-
-### CI/CD setup
-
-1. docker-registry 접속 계정을 SECRETS로 등록 (docker-registry.com)
-
-2. [WIP] ArgoCD 설정
