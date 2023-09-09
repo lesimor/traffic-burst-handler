@@ -1,5 +1,3 @@
-import time
-
 import requests
 from kubernetes import client, config
 
@@ -85,22 +83,17 @@ def scale_down_pods():
 
 
 if __name__ == "__main__":
-    while True:
-        avg_time = get_avg_response_time(
-            PROMETHEUS_URL, INGRESS_NAME, interval=INTERVAL
-        )
-        print(
-            f"Average response time for {INGRESS_NAME} over the last {INTERVAL}: {avg_time} seconds"
-        )
+    avg_time = get_avg_response_time(PROMETHEUS_URL, INGRESS_NAME, interval=INTERVAL)
+    print(
+        f"Average response time for {INGRESS_NAME} over the last {INTERVAL}: {avg_time} seconds"
+    )
 
-        if avg_time > THRESHOLD:
-            print("Average response time exceeded threshold. Scaling up...")
-            scale_up_pods()
-        else:
-            scale_difference = (THRESHOLD - avg_time) / THRESHOLD
+    if avg_time > THRESHOLD:
+        print("Average response time exceeded threshold. Scaling up...")
+        scale_up_pods()
+    else:
+        scale_difference = (THRESHOLD - avg_time) / THRESHOLD
 
-            if scale_difference >= 0.10:
-                print("Significant difference from threshold detected. Scaling down...")
-                scale_down_pods()
-
-        time.sleep(SLEEP_TIME)
+        if scale_difference >= 0.10:
+            print("Significant difference from threshold detected. Scaling down...")
+            scale_down_pods()

@@ -1,8 +1,10 @@
 # pylint: disable=missing-module-docstring,missing-function-docstring,missing-class-docstring, line-too-long, broad-exception-raised
 import requests
 
-PROMETHEUS_URL = "http://kaist-ingress-prometheus.dchain-connect.com"
-INGRESS_NAME = "php-apache-ingress"
+from rushguard.settings import settings
+
+PROMETHEUS_URL = settings.prometheus_url
+INGRESS_NAME = settings.ingress_name
 
 
 def get_avg_response_time(prom_url, ingress_name, interval="5m"):
