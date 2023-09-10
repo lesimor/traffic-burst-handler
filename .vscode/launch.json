@@ -12,6 +12,32 @@
             "console": "integratedTerminal",
             "cwd": "${workspaceFolder}",
             "justMyCode": true
+        },
+        // run rushguard cli with poetry
+        {
+            "name": "Python: rushguard",
+            "type": "python",
+            "request": "launch",
+            "module": "poetry",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}",
+            "args": [
+                "run",
+                "rushguard",
+                "--env-file",
+                "${input:envFile}",
+                "scaler"
+            ],
+            "jinja": true,
+            "justMyCode": true
+        },
+    ],
+    "inputs": [
+        {
+            "id": "envFile",
+            "type": "promptString",
+            "description": "env file path",
+            "default": "${workspaceFolder}/.env"
         }
     ]
 }

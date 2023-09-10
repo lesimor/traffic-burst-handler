@@ -7,13 +7,9 @@ PROMETHEUS_URL = settings.prometheus_url
 INGRESS_NAME = settings.ingress_name
 INTERVAL = settings.interval_unit
 THRESHOLD = settings.response_time_threshold
-SLEEP_TIME = 60  # 60초마다 체크
 NAMESPACE = settings.kube_namespace
 DEPLOYMENT_NAME = settings.kube_deployment
 MAX_REPLICAS = settings.max_replicas
-
-config.load_kube_config(context=settings.kube_context)
-v1 = client.AppsV1Api()  # Create an API client object for the AppsV1 API group
 
 
 def get_avg_response_time(prom_url, ingress_name, interval="5m"):
@@ -39,50 +35,56 @@ def get_avg_response_time(prom_url, ingress_name, interval="5m"):
     return float(avg_response_time)
 
 
-def scale_up_pods():
+def scale_up_pods(
+    api: client.AppsV1Api,
+    namespace: str,
+    deployment: str,
+    max_replicas: int,
+):
     try:
         # 현재의 replica 수를 가져옵니다.
-        current_deployment = v1.read_namespaced_deployment(DEPLOYMENT_NAME, NAMESPACE)
+        current_deployment = api.read_namespaced_deployment(deployment, namespace)
         current_replicas = current_deployment.spec.replicas
 
         if current_replicas < MAX_REPLICAS:
             current_deployment.spec.replicas = current_replicas + 1
-            v1.patch_namespaced_deployment(
-                DEPLOYMENT_NAME, NAMESPACE, current_deployment
-            )
+            api.patch_namespaced_deployment(deployment, namespace, current_deployment)
             print(
-                f"Scaled up {DEPLOYMENT_NAME} to {current_deployment.spec.replicas} replicas."
+                f"Scaled up {deployment} to {current_deployment.spec.replicas} replicas."
             )
         else:
-            print(
-                f"{DEPLOYMENT_NAME} has already reached max replicas ({MAX_REPLICAS})."
-            )
+            print(f"{deployment} has already reached max replicas ({max_replicas}).")
 
     except Exception as e:
         print(f"Error scaling up: {e}")
 
 
-def scale_down_pods():
+def scale_down_pods(
+    api,
+    namespace: str,
+    deployment: str,
+    min_replicas: int = 1,
+):
     try:
-        current_deployment = v1.read_namespaced_deployment(DEPLOYMENT_NAME, NAMESPACE)
+        current_deployment = api.read_namespaced_deployment(deployment, namespace)
         current_replicas = current_deployment.spec.replicas
 
-        if current_replicas > 1:
+        if current_replicas > min_replicas:
             current_deployment.spec.replicas = current_replicas - 1
-            v1.patch_namespaced_deployment(
-                DEPLOYMENT_NAME, NAMESPACE, current_deployment
-            )
+            api.patch_namespaced_deployment(deployment, namespace, current_deployment)
             print(
-                f"Scaled down {DEPLOYMENT_NAME} to {current_deployment.spec.replicas} replicas."
+                f"Scaled down {deployment} to {current_deployment.spec.replicas} replicas."
             )
         else:
-            print(f"{DEPLOYMENT_NAME} is already at minimum replicas.")
+            print(f"{deployment} is already at minimum replicas.")
 
     except Exception as e:
         print(f"Error scaling down: {e}")
 
 
 if __name__ == "__main__":
+    config.load_kube_config(context=settings.kube_context)
+    v1 = client.AppsV1Api()  # Create an API client object for the AppsV1 API group
     avg_time = get_avg_response_time(PROMETHEUS_URL, INGRESS_NAME, interval=INTERVAL)
     print(
         f"Average response time for {INGRESS_NAME} over the last {INTERVAL}: {avg_time} seconds"
@@ -90,10 +92,10 @@ if __name__ == "__main__":
 
     if avg_time > THRESHOLD:
         print("Average response time exceeded threshold. Scaling up...")
-        scale_up_pods()
+        scale_up_pods(v1)
     else:
         scale_difference = (THRESHOLD - avg_time) / THRESHOLD
 
         if scale_difference >= 0.10:
             print("Significant difference from threshold detected. Scaling down...")
-            scale_down_pods()
+            scale_down_pods(v1)

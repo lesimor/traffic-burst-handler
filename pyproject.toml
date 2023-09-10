@@ -31,7 +31,7 @@ pytest = "*"
 locust = "^2.16.1"
 
 [tool.poetry.scripts]
-rushguard = 'rushguard.cli.main:hello'
+rushguard = 'rushguard.cli.main:cli'
 
 [tool.mypy]
 ignore_missing_imports = true
