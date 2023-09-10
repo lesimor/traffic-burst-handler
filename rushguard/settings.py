@@ -12,6 +12,4 @@ class Settings(BaseSettings):
     ingress_name: str
     interval_unit: str
     response_time_threshold: float
-
-
-settings = Settings()
+    response_time_threshold_bandwidth_below: float

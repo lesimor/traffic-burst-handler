@@ -1,11 +1,6 @@
 # pylint: disable=missing-module-docstring,missing-function-docstring,missing-class-docstring, line-too-long, broad-exception-raised
 import requests
 
-from rushguard.settings import settings
-
-PROMETHEUS_URL = settings.prometheus_url
-INGRESS_NAME = settings.ingress_name
-
 
 def get_avg_response_time(prom_url, ingress_name, interval="5m"):
     query = (
@@ -30,13 +25,3 @@ def get_avg_response_time(prom_url, ingress_name, interval="5m"):
 
     avg_response_time = data["data"]["result"][0]["value"][1]
     return float(avg_response_time)
-
-
-if __name__ == "__main__":
-    INTERVAL_UNIT = "2m"
-    avg_time = get_avg_response_time(
-        PROMETHEUS_URL, INGRESS_NAME, interval=INTERVAL_UNIT
-    )
-    print(
-        f"Average response time for {INGRESS_NAME} over the last {INTERVAL_UNIT}: {avg_time} seconds"
-    )

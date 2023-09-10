@@ -1,11 +1,6 @@
 # pylint: disable=missing-module-docstring,missing-function-docstring,missing-class-docstring, line-too-long, broad-exception-raised
 import requests
 
-from rushguard.settings import settings
-
-PROMETHEUS_URL = settings.prometheus_url
-INGRESS_NAME = settings.ingress_name
-
 
 def get_qps(prom_url, ingress_name, interval="5m"):
     # This is a simple example using http_requests_total metric.
@@ -29,9 +24,3 @@ def get_qps(prom_url, ingress_name, interval="5m"):
 
     qps = data["data"]["result"][0]["value"][1]
     return float(qps)
-
-
-if __name__ == "__main__":
-    INTERVAL_UNIT = "2m"
-    qps_value = get_qps(PROMETHEUS_URL, INGRESS_NAME, interval=INTERVAL_UNIT)
-    print(f"QPS (over the last 5 minutes): {qps_value}")

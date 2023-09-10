@@ -1,15 +1,5 @@
 import requests
-from kubernetes import client, config
-
-from rushguard.settings import settings
-
-PROMETHEUS_URL = settings.prometheus_url
-INGRESS_NAME = settings.ingress_name
-INTERVAL = settings.interval_unit
-THRESHOLD = settings.response_time_threshold
-NAMESPACE = settings.kube_namespace
-DEPLOYMENT_NAME = settings.kube_deployment
-MAX_REPLICAS = settings.max_replicas
+from kubernetes import client
 
 
 def get_avg_response_time(prom_url, ingress_name, interval="5m"):
@@ -46,7 +36,7 @@ def scale_up_pods(
         current_deployment = api.read_namespaced_deployment(deployment, namespace)
         current_replicas = current_deployment.spec.replicas
 
-        if current_replicas < MAX_REPLICAS:
+        if current_replicas < max_replicas:
             current_deployment.spec.replicas = current_replicas + 1
             api.patch_namespaced_deployment(deployment, namespace, current_deployment)
             print(
@@ -80,22 +70,3 @@ def scale_down_pods(
 
     except Exception as e:
         print(f"Error scaling down: {e}")
-
-
-if __name__ == "__main__":
-    config.load_kube_config(context=settings.kube_context)
-    v1 = client.AppsV1Api()  # Create an API client object for the AppsV1 API group
-    avg_time = get_avg_response_time(PROMETHEUS_URL, INGRESS_NAME, interval=INTERVAL)
-    print(
-        f"Average response time for {INGRESS_NAME} over the last {INTERVAL}: {avg_time} seconds"
-    )
-
-    if avg_time > THRESHOLD:
-        print("Average response time exceeded threshold. Scaling up...")
-        scale_up_pods(v1)
-    else:
-        scale_difference = (THRESHOLD - avg_time) / THRESHOLD
-
-        if scale_difference >= 0.10:
-            print("Significant difference from threshold detected. Scaling down...")
-            scale_down_pods(v1)

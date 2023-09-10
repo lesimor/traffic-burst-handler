@@ -31,6 +31,25 @@
             "jinja": true,
             "justMyCode": true
         },
+        // execute locust ui
+        {
+            "name": "Python: locust",
+            "type": "python",
+            "request": "launch",
+            "module": "poetry",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}",
+            "args": [
+                "run",
+                "locust",
+                "-f",
+                "${workspaceFolder}/tests/loadtest/locustfile.py",
+                "--host",
+                "${input:locustHost}"
+            ],
+            "jinja": true,
+            "justMyCode": true
+        }
     ],
     "inputs": [
         {
@@ -38,6 +57,12 @@
             "type": "promptString",
             "description": "env file path",
             "default": "${workspaceFolder}/.env"
+        },
+        {
+            "id": "locustHost",
+            "type": "promptString",
+            "description": "locust host",
+            "default": "http://webeng.dchain-connect.com/"
         }
     ]
 }
