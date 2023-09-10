@@ -43,3 +43,11 @@ pre-commit install
 ```
 poetry run pytest
 ```
+
+### Docker build
+
+```
+docker build --platform linux/amd64 -t rushguard-scaler .
+docker tag rushguard-scaler docker-registry.com/rushguard-scaler:v0.0.1
+docker push docker-registry.com/rushguard-scaler:v0.0.1
+```

@@ -1,0 +1,50 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: scaler-sa
+  namespace: webeng
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: webeng
+  name: deployment-manager
+rules:
+  - apiGroups: ["apps"]
+    resources: ["deployments"]
+    verbs: ["get", "list", "update", "patch"] # adjust the verbs as per your requirement
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: deployment-manager-binding
+  namespace: webeng
+subjects:
+  - kind: ServiceAccount
+    name: scaler-sa
+    namespace: webeng
+roleRef:
+  kind: Role
+  name: deployment-manager
+  apiGroup: rbac.authorization.k8s.io
+
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: scaler-cronjob
+spec:
+  schedule: "* * * * *" # This run every minute
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccountName: scaler-sa
+          containers:
+            - name: rushguard-scaler
+              image: docker-registry.com/rushguard-scaler:v0.0.1
+          restartPolicy: OnFailure
+          imagePullSecrets:
+            - name: my-regcred
