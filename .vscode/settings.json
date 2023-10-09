@@ -48,5 +48,9 @@
     "files.autoSave": "onFocusChange",
     "python.analysis.importFormat": "relative",
     "D2.previewLayout": "elk",
-    "D2.previewSketch": true
+    "D2.previewSketch": true,
+    "extensions.experimental.affinity": {
+        "vscodevim.vim": 1,
+        "asvetliakov.vscode-neovim": 1
+    },
 }

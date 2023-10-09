@@ -16,6 +16,7 @@ kubernetes = "^27.2.0"
 pydantic-settings = "^2.0.3"
 requests = "^2.31.0"
 click = "^8.1.7"
+matplotlib = "^3.8.0"
 
 [tool.poetry.group.dev.dependencies]
 autoflake = ">=1.4.0,<1.5.0"

@@ -2,7 +2,7 @@ import click
 from kubernetes import client, config
 
 from ..metric.rt import get_avg_response_time
-from ..scaler.resource import scale_down_pods, scale_up_pods
+from ..scaler.resource import get_current_pod_count, scale_pods
 from ..settings import Settings
 
 
@@ -39,12 +39,26 @@ def scaler(ctx, incluster):
         f"Average response time for {ingress} over the last {interval}: {avg_time} seconds"
     )
 
+    pods_to_scale = current_pods = get_current_pod_count(
+        k8s_client, namespace, deployment
+    )
+
     if avg_time > rt_threshold:
         print("Average response time exceeded threshold. Scaling up...")
-        scale_up_pods(k8s_client, namespace, deployment, max_replicas)
+        # scale_up_pods(k8s_client, namespace, deployment, max_replicas)
+        pods_to_scale += 1
     else:
         scale_difference = (rt_threshold - avg_time) / rt_threshold
 
         if scale_difference >= rt_bandwidth_below:
             print("Significant difference from threshold detected. Scaling down...")
-            scale_down_pods(k8s_client, namespace, deployment)
+            # scale_down_pods(k8s_client, namespace, deployment)
+            pods_to_scale -= 1
+    if pods_to_scale > max_replicas:
+        print(f"Max replicas ({max_replicas}) exceeded. Scaling down...")
+        pods_to_scale = max_replicas
+
+    if pods_to_scale == current_pods:
+        print("No scaling required.")
+    else:
+        scale_pods(k8s_client, namespace, deployment, pods_to_scale)
