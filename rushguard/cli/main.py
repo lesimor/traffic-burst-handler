@@ -1,7 +1,10 @@
+from datetime import datetime, timedelta
+
 import click
 from kubernetes import client, config
 
 from ..metric.rt import get_avg_response_time
+from ..scaler.buffer import calculate_buffer
 from ..scaler.resource import get_current_pod_count, scale_pods
 from ..settings import Settings
 
@@ -33,6 +36,7 @@ def scaler(ctx, incluster):
     deployment = settings.kube_deployment
     max_replicas = settings.max_replicas
     rt_bandwidth_below = settings.response_time_threshold_bandwidth_below
+    max_pod_buffer = settings.max_pod_buffer
 
     avg_time = get_avg_response_time(prometheus_url, ingress, interval=interval)
     print(
@@ -54,11 +58,20 @@ def scaler(ctx, incluster):
             print("Significant difference from threshold detected. Scaling down...")
             # scale_down_pods(k8s_client, namespace, deployment)
             pods_to_scale -= 1
-    if pods_to_scale > max_replicas:
-        print(f"Max replicas ({max_replicas}) exceeded. Scaling down...")
-        pods_to_scale = max_replicas
 
-    if pods_to_scale == current_pods:
+    buffer_pods = calculate_buffer(
+        y0=max_pod_buffer,
+        t_start=datetime.now() - timedelta(minutes=5),
+    )
+
+    total_pods = pods_to_scale + buffer_pods
+
+    if total_pods > max_replicas:
+        print(f"Max replicas ({max_replicas}) exceeded. Scaling down...")
+        total_pods = max_replicas
+
+    if total_pods == current_pods:
         print("No scaling required.")
     else:
-        scale_pods(k8s_client, namespace, deployment, pods_to_scale)
+        print(f"Scaling from {current_pods} to {total_pods}...")
+        scale_pods(k8s_client, namespace, deployment, total_pods)

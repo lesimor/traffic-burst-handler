@@ -14,3 +14,4 @@ class Settings(BaseSettings):
     response_time_threshold: float
     response_time_threshold_bandwidth_below: float
     default_pod_buffer: int = 1
+    max_pod_buffer: int = 10
