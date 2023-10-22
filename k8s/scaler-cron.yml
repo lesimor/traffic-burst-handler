@@ -35,6 +35,7 @@ apiVersion: batch/v1
 kind: CronJob
 metadata:
   name: scaler-cronjob
+  namespace: webeng
 spec:
   schedule: "* * * * *" # This run every minute
   jobTemplate:
