@@ -4,7 +4,7 @@ import click
 from kubernetes import client, config
 
 from ..metric.rt import get_avg_response_time
-from ..scaler.buffer import calculate_buffer
+from ..scaler.buffer import buffer_pod_number
 from ..scaler.resource import get_current_pod_count, scale_pods
 from ..settings import Settings
 
@@ -59,7 +59,8 @@ def scaler(ctx, incluster):
             # scale_down_pods(k8s_client, namespace, deployment)
             pods_to_scale -= 1
 
-    buffer_pods = calculate_buffer(
+    buffer_pods = buffer_pod_number(
+        settings,
         y0=max_pod_buffer,
         t_start=datetime.now() - timedelta(minutes=5),
     )

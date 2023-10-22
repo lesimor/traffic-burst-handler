@@ -3,10 +3,24 @@ import datetime  # datetime 모듈을 import
 import numpy as np
 import pandas as pd
 
+from rushguard.settings import Settings
 
-def calculate_buffer(
-    y0=100,
-    k=0.001,
+
+def buffer_pod_number(
+    settings: Settings,
+    t_start=datetime.datetime.now(),
+) -> int:
+    pod_elapsed = pod_number_by_elpased_time_after_traffic_burst_started(
+        settings,
+        t_start=t_start,
+    )
+    pod_volatility = pod_number_by_volatility(settings)
+
+    return pod_elapsed + pod_volatility
+
+
+def pod_number_by_elpased_time_after_traffic_burst_started(
+    settings: Settings,
     t_start=datetime.datetime.now(),
     default=0,
 ) -> int:
@@ -14,10 +28,25 @@ def calculate_buffer(
     if now < t_start:
         return default
     elapsed = now - t_start
-    return int(y0 * np.exp(-k * elapsed.total_seconds()))
+    return int(
+        settings.max_pod_number_by_elapsed_time
+        * np.exp(-settings.buffer_exponential_decay_rate * elapsed.total_seconds())
+    )
 
 
-def analyze_trend(series, short_period=5, long_period=20) -> float:
+def pod_number_by_volatility(settings: Settings) -> int:
+    # TODO: Implement this function using prometheus data
+    traffic_series = pd.Series([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+
+    buffer_pod_by_trend = int(traffic_trend(traffic_series) / settings.capacity_per_pod)
+    buffer_pod_by_volatility = int(
+        volatility_trend(traffic_series) * settings.capacity_per_pod
+    )
+
+    return buffer_pod_by_trend + buffer_pod_by_volatility
+
+
+def traffic_trend(series, short_period=5, long_period=20) -> float:
     """
     Analyze trend by comparing short-term and long-term averages.
 
@@ -38,9 +67,29 @@ def analyze_trend(series, short_period=5, long_period=20) -> float:
     return short_avg - long_avg
 
 
+def volatility_trend(time_series_data, window_size=3):
+    # 이동평균과 이동표준편차 계산
+    rolling_std = time_series_data.rolling(window=window_size).std()
+
+    return traffic_trend(rolling_std)
+
+
 if __name__ == "__main__":
     # Example usage
-    data = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 9, 8, 7, 6, 5]
+    data = [
+        1,
+        2,
+        1,
+        2,
+        4,
+        2,
+        6,
+        2,
+        8,
+        10,
+    ]
     series = pd.Series(data)
-    trend = analyze_trend(series, short_period=2)
-    print(trend)
+    _traffic_trend = traffic_trend(series, short_period=2)
+    _volatility_trend = volatility_trend(series)
+    print(_traffic_trend)
+    print(_volatility_trend)

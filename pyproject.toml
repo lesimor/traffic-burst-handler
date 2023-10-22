@@ -18,6 +18,7 @@ requests = "^2.31.0"
 click = "^8.1.7"
 matplotlib = "^3.8.0"
 pandas = "^2.1.1"
+numpy = "^1.26.1"
 
 [tool.poetry.group.dev.dependencies]
 autoflake = ">=1.4.0,<1.5.0"
