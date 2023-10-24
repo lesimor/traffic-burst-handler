@@ -2,7 +2,7 @@ import click
 
 from rushguard.settings import Settings
 
-from ...metric.qps import get_qps
+from ...metric.qps import get_qps_time_series
 
 
 @click.command()
@@ -14,5 +14,7 @@ def metric(ctx):
     ingress = settings.ingress_name
     interval = settings.interval_unit
 
-    qps_series = get_qps(prometheus_url, ingress, interval=interval)
+    qps_series = get_qps_time_series(
+        prometheus_url, ingress, duration="2m", step=interval
+    )
     print(qps_series)
