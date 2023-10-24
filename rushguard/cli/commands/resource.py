@@ -37,7 +37,7 @@ def scale(ctx):
         prometheus_url, ingress, duration="2m", step="1s"
     )
 
-    current_qps = qps_time_series[-30:]["qps"].mean()
+    current_qps = qps_time_series[-3:]["qps"].mean()
 
     qps_capacity_per_pod = settings.qps_capacity_per_pod
 

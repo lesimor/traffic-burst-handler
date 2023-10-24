@@ -12,7 +12,7 @@ def get_qps_time_series(
     # This is a simple example using http_requests_total metric.
     # You might need to adjust this to your specific metric name or labels.
 
-    query = f'sum(rate(nginx_ingress_controller_requests{{ingress="{ingress_name}"}}[{duration}]))'
+    query = f'sum(irate(nginx_ingress_controller_requests{{ingress="{ingress_name}"}}[{duration}]))'
 
     prom = PrometheusConnect(url=prom_url, disable_ssl=True)
 
