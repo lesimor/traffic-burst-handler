@@ -1,9 +1,12 @@
+import math
+
 import click
 
-from rushguard.metric.qps import get_qps_time_series
-from rushguard.metric.rt import get_avg_response_time
+from rushguard.metric.ingress import get_avg_response_time, get_qps_time_series
 from rushguard.scaler.resource import get_current_pod_count, scale_pods
 from rushguard.settings import Settings
+
+from ...metric.resource import get_resource_metrics
 
 
 @click.group()
@@ -43,9 +46,31 @@ def scale(ctx):
 
     pod_number_by_latency = current_qps // qps_capacity_per_pod
 
+    (
+        current_avg_cpu_usage_nano_second,
+        current_avg_memory_usage_kilobyte,
+    ) = get_resource_metrics(namespace)
+    cpu_usage_limit_nano_second = settings.cpu_utilization_threshold_second * (2**30)
+    mem_usage_limit_kilobyte = settings.memory_utilization_threshold_megabyte * (
+        2**10
+    )
+
+    required_pod_by_cpu = math.ceil(
+        current_pods * (current_avg_cpu_usage_nano_second / cpu_usage_limit_nano_second)
+    )
+    required_pod_by_memory = math.ceil(
+        current_pods * (current_avg_memory_usage_kilobyte / mem_usage_limit_kilobyte)
+    )
+
+    pod_number_by_utilization = max(
+        required_pod_by_cpu,
+        required_pod_by_memory,
+    )
+
     pods_to_scale = min(
         max(
             pod_number_by_latency,
+            pod_number_by_utilization,
             settings.min_replicas,
         ),
         settings.max_replicas,
@@ -55,7 +80,7 @@ def scale(ctx):
         print(f"Scaling from {current_pods} to {pods_to_scale}...")
         scale_pods(k8s_client, namespace, deployment, pods_to_scale)
 
-    # if avg_time > rt_threshold:
+    # if avg_time > rt_threshold:3
     #     print("Average response time exceeded threshold. Scaling up...")
     #     # scale_up_pods(k8s_client, namespace, deployment, max_replicas)
     #     pods_to_scale += 1

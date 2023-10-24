@@ -2,8 +2,8 @@ import click
 
 from rushguard.settings import Settings
 
-from ...metric.qps import get_qps_time_series
-from ...metric.rt import get_avg_response_time
+from ...metric.ingress import get_avg_response_time, get_qps_time_series
+from ...metric.resource import get_resource_metrics
 
 
 @click.command()
@@ -22,3 +22,6 @@ def metric(ctx):
 
     avg_response_time = get_avg_response_time(prometheus_url, ingress, interval="5m")
     print(avg_response_time)
+
+    avg_cpu_usage, avg_memory_usage = get_resource_metrics("webeng")
+    print(avg_cpu_usage, avg_memory_usage)

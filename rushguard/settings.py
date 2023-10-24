@@ -22,3 +22,5 @@ class Settings(BaseSettings):
     qps_capacity_per_pod: int = 5  # Pod 당 처리량
     max_pod_number_by_elapsed_time: int = 10  # 트래픽 급증 시점으로부터의 경과 시간으로 결정되는 최대 Pod 수
     buffer_exponential_decay_rate: float = 0.001  # 버퍼의 지수 감쇠율
+    cpu_utilization_threshold_second: float = 0.3  # CPU 사용률
+    memory_utilization_threshold_megabyte: float = 20  # 메모리 사용량
