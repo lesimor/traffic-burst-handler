@@ -44,6 +44,15 @@ pre-commit install
 poetry run pytest
 ```
 
+### python package build
+
+```
+poetry config repositories.dc http://docker-registry.com/repository/dchain-connect-pypi/
+poetry config http-basic.dc <USERNAME> <PASSWORD>
+poetry build
+poetry publish -r dc
+```
+
 ### Docker build
 
 ```
