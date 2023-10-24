@@ -14,9 +14,7 @@ class Settings(BaseSettings):
     min_replicas: int  # 최소 레플리카 수
     ingress_name: str  # 인그레스 이름
     avg_rt_duration: str  # 간격 단위
-    qps_time_series_duration: str
     response_time_threshold: float  # 응답 시간 임계값
-    response_time_threshold_bandwidth_below: float  # 응답 시간 임계값 아래 대역폭
     default_pod_buffer: int = 1  # 기본 Pod 버퍼
     max_pod_buffer: int = 10  # 최대 Pod 버퍼
     qps_capacity_per_pod: int = 5  # Pod 당 처리량
@@ -24,3 +22,5 @@ class Settings(BaseSettings):
     buffer_exponential_decay_rate: float = 0.001  # 버퍼의 지수 감쇠율
     cpu_utilization_threshold_second: float = 0.3  # CPU 사용률
     memory_utilization_threshold_megabyte: float = 20  # 메모리 사용량
+    qps_time_series_duration: str = "2m"  # QPS 시계열의 기간
+    qps_time_series_step: str = "1s"  # QPS 시계열의 간격
