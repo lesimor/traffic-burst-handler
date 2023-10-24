@@ -38,9 +38,11 @@ def pod_number_by_volatility(settings: Settings) -> int:
     # TODO: Implement this function using prometheus data
     traffic_series = pd.Series([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
 
-    buffer_pod_by_trend = int(traffic_trend(traffic_series) / settings.capacity_per_pod)
+    buffer_pod_by_trend = int(
+        traffic_trend(traffic_series) / settings.rt_capacity_per_pod
+    )
     buffer_pod_by_volatility = int(
-        volatility_trend(traffic_series) * settings.capacity_per_pod
+        volatility_trend(traffic_series) * settings.rt_capacity_per_pod
     )
 
     return buffer_pod_by_trend + buffer_pod_by_volatility

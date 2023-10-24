@@ -3,6 +3,7 @@ import click
 from rushguard.settings import Settings
 
 from ...metric.qps import get_qps_time_series
+from ...metric.rt import get_avg_response_time
 
 
 @click.command()
@@ -12,9 +13,12 @@ def metric(ctx):
 
     prometheus_url = settings.prometheus_url
     ingress = settings.ingress_name
-    interval = settings.interval_unit
+    qps_time_series_duration = settings.qps_time_series_duration
 
     qps_series = get_qps_time_series(
-        prometheus_url, ingress, duration="2m", step=interval
+        prometheus_url, ingress, duration=qps_time_series_duration, step="1s"
     )
     print(qps_series)
+
+    avg_response_time = get_avg_response_time(prometheus_url, ingress, interval="5m")
+    print(avg_response_time)
