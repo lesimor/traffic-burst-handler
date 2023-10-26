@@ -10,7 +10,6 @@ from rushguard.settings import Settings
 from rushguard.utils.graph import generate_graph
 
 from ...metric.resource import get_resource_metrics
-from ...scaler.buffer import buffer_pod_number
 
 
 @click.group()
@@ -96,7 +95,7 @@ def scale(ctx, test_duration_second, scaling_interval_second, graph):
                 required_pod_by_memory,
             )
 
-            buffer_pod = buffer_pod_number(qps_time_series["qps"], settings)
+            # buffer_pod = buffer_pod_number(qps_time_series["qps"], settings)
 
             pods_to_scale = min(
                 max(
