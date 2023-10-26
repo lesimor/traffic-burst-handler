@@ -16,8 +16,7 @@ def get_resource_metrics(namespace="default"):
     cpu_usages = []
     memory_usages = []
     for pod in api_response["items"]:
-        pod_name = pod["metadata"]["name"]
-        print(f"Pod name: {pod_name}")
+        # pod_name = pod["metadata"]["name"]
 
         # 컨테이너 메트릭 정보
         for container in pod["containers"]:

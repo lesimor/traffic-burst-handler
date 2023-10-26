@@ -7,26 +7,28 @@ from rushguard.settings import Settings
 
 
 def buffer_pod_number(
+    traffic_series: pd.Series,
     settings: Settings,
-    t_start=datetime.datetime.now(),
 ) -> int:
-    pod_elapsed = pod_number_by_elpased_time_after_traffic_burst_started(
-        settings,
-        t_start=t_start,
+    tb_start_timestamp = datetime.datetime.fromtimestamp(
+        settings.traffic_burst_start_timestamp
     )
-    pod_volatility = pod_number_by_volatility(settings)
+    pod_elapsed = pod_number_by_elapsed_time_after_traffic_burst_started(
+        settings,
+        t_start=tb_start_timestamp,
+    )
+    pod_volatility = pod_number_by_volatility(traffic_series, settings)
 
     return pod_elapsed + pod_volatility
 
 
-def pod_number_by_elpased_time_after_traffic_burst_started(
+def pod_number_by_elapsed_time_after_traffic_burst_started(
     settings: Settings,
     t_start=datetime.datetime.now(),
-    default=0,
 ) -> int:
     now = datetime.datetime.now()
     if now < t_start:
-        return default
+        return settings.max_pod_number_by_elapsed_time
     elapsed = now - t_start
     return int(
         settings.max_pod_number_by_elapsed_time
@@ -34,15 +36,12 @@ def pod_number_by_elpased_time_after_traffic_burst_started(
     )
 
 
-def pod_number_by_volatility(settings: Settings) -> int:
-    # TODO: Implement this function using prometheus data
-    traffic_series = pd.Series([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
-
+def pod_number_by_volatility(traffic_series, settings: Settings) -> int:
     buffer_pod_by_trend = int(
-        traffic_trend(traffic_series) / settings.rt_capacity_per_pod
+        traffic_trend(traffic_series) / settings.qps_capacity_per_pod
     )
     buffer_pod_by_volatility = int(
-        volatility_trend(traffic_series) * settings.rt_capacity_per_pod
+        volatility_trend(traffic_series) * settings.qps_capacity_per_pod
     )
 
     return buffer_pod_by_trend + buffer_pod_by_volatility

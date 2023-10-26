@@ -27,7 +27,11 @@
         "--env-file",
         "${input:envFile}",
         "resource",
-        "scale"
+        "scale",
+        "--test-duration-second",
+        "${input:testDurationSecond}",
+        "--scaling-interval-second",
+        "${input:scalingIntervalSecond}"
       ],
       "jinja": true,
       "justMyCode": true
@@ -75,6 +79,18 @@
       "type": "promptString",
       "description": "locust host",
       "default": "http://webeng.dchain-connect.com/"
+    },
+    {
+      "id": "testDurationSecond",
+      "type": "promptString",
+      "description": "Test Duration Second",
+      "default": "600"
+    },
+    {
+      "id": "scalingIntervalSecond",
+      "type": "promptString",
+      "description": "Scaling Interval Second",
+      "default": "30"
     }
   ]
 }

@@ -42,7 +42,7 @@ def get_avg_response_time(prom_url, ingress_name, interval="5m"):
     )
 
     response = requests.get(
-        f"{prom_url}/api/v1/query", params={"query": query}, timeout=5
+        f"{prom_url}/api/v1/query", params={"query": query}, timeout=10
     )
 
     if response.status_code != 200:

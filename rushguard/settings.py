@@ -15,12 +15,13 @@ class Settings(BaseSettings):
     ingress_name: str  # 인그레스 이름
     avg_rt_duration: str  # 간격 단위
     response_time_threshold: float  # 응답 시간 임계값
-    default_pod_buffer: int = 1  # 기본 Pod 버퍼
-    max_pod_buffer: int = 10  # 최대 Pod 버퍼
-    qps_capacity_per_pod: int = 5  # Pod 당 처리량
-    max_pod_number_by_elapsed_time: int = 10  # 트래픽 급증 시점으로부터의 경과 시간으로 결정되는 최대 Pod 수
-    buffer_exponential_decay_rate: float = 0.001  # 버퍼의 지수 감쇠율
-    cpu_utilization_threshold_second: float = 0.3  # CPU 사용률
-    memory_utilization_threshold_megabyte: float = 20  # 메모리 사용량
-    qps_time_series_duration: str = "2m"  # QPS 시계열의 기간
-    qps_time_series_step: str = "1s"  # QPS 시계열의 간격
+    max_pod_buffer: int  # 최대 Pod 버퍼
+    qps_capacity_per_pod: int  # Pod 당 처리량
+    max_pod_number_by_elapsed_time: int  # 트래픽 급증 시점으로부터의 경과 시간으로 결정되는 최대 Pod 수
+    buffer_exponential_decay_rate: float  # 버퍼의 지수 감쇠율
+    cpu_utilization_threshold_second: float  # CPU 사용률
+    memory_utilization_threshold_megabyte: float  # 메모리 사용량
+    qps_time_series_duration: str  # QPS 시계열의 기간
+    qps_time_series_step: str  # QPS 시계열의 간격
+    qps_mean_window_size: int  # QPS 평균 윈도우 크기
+    traffic_burst_start_timestamp: int
