@@ -1,5 +1,6 @@
 import math
 import time
+import traceback
 from datetime import datetime, timedelta
 
 import click
@@ -10,6 +11,7 @@ from rushguard.settings import Settings
 from rushguard.utils.graph import generate_graph
 
 from ...metric.resource import get_resource_metrics
+from ...scaler.buffer import buffer_pod_number
 
 
 @click.group()
@@ -21,9 +23,10 @@ def resource(ctx):
 @click.command()
 @click.option("--test-duration-second")
 @click.option("--scaling-interval-second")
+@click.option("--output-file")
 @click.option("--graph", is_flag=True, default=True)
 @click.pass_context
-def scale(ctx, test_duration_second, scaling_interval_second, graph):
+def scale(ctx, test_duration_second, scaling_interval_second, output_file, graph):
     settings: Settings = ctx.obj["settings"]
 
     k8s_client = ctx.obj["k8s_client"]
@@ -37,6 +40,7 @@ def scale(ctx, test_duration_second, scaling_interval_second, graph):
 
     graph_data = []
 
+    adaptive_pod_history = []
     while datetime.now() < start_time + timedelta(seconds=int(test_duration_second)):
         try:
             avg_response_time = get_avg_response_time(
@@ -46,9 +50,12 @@ def scale(ctx, test_duration_second, scaling_interval_second, graph):
                 f"Average response time for {ingress} over the last {interval}: {avg_response_time} seconds"  # noqa
             )
 
-            pods_to_scale = current_pods = get_current_pod_count(
+            current_pod_count = current_adaptive_pods_volume = get_current_pod_count(
                 k8s_client, namespace, deployment
             )
+
+            if adaptive_pod_history:
+                current_adaptive_pods_volume = adaptive_pod_history[-1]
 
             qps_time_series = get_qps_time_series(
                 prometheus_url,
@@ -68,7 +75,7 @@ def scale(ctx, test_duration_second, scaling_interval_second, graph):
             (
                 current_avg_cpu_usage_nano_second,
                 current_avg_memory_usage_kilobyte,
-            ) = get_resource_metrics(namespace)
+            ) = get_resource_metrics(settings=settings)
             cpu_usage_limit_nano_second = settings.cpu_utilization_threshold_second * (
                 2**30
             )
@@ -77,11 +84,11 @@ def scale(ctx, test_duration_second, scaling_interval_second, graph):
             )
 
             required_pod_by_cpu = math.ceil(
-                current_pods
+                current_adaptive_pods_volume
                 * (current_avg_cpu_usage_nano_second / cpu_usage_limit_nano_second)
             )
             required_pod_by_memory = math.ceil(
-                current_pods
+                current_adaptive_pods_volume
                 * (current_avg_memory_usage_kilobyte / mem_usage_limit_kilobyte)
             )
 
@@ -95,9 +102,9 @@ def scale(ctx, test_duration_second, scaling_interval_second, graph):
                 required_pod_by_memory,
             )
 
-            # buffer_pod = buffer_pod_number(qps_time_series["qps"], settings)
+            buffer_pod = buffer_pod_number(qps_time_series["qps"], settings)
 
-            pods_to_scale = min(
+            adaptive_pod_volume = min(
                 max(
                     pod_number_by_latency,
                     pod_number_by_utilization,
@@ -108,26 +115,36 @@ def scale(ctx, test_duration_second, scaling_interval_second, graph):
                 settings.max_replicas,
             )
 
+            adaptive_pod_history.append(adaptive_pod_volume)
+
+            pod_to_scale = adaptive_pod_volume + buffer_pod
+
             print("----min----")
             print("----max----")
             print(f"pod_number_by_latency: {pod_number_by_latency}")
             print(f"pod_number_by_utilization: {pod_number_by_utilization}")
             print(f"required_pod_by_latency: {required_pod_by_latency}")
             print(f"settings.min_replicas: {settings.min_replicas}")
+            print(f"==> adaptive_pod_volume: {adaptive_pod_volume}")
             print("-----------")
-            # print(f"+ buffer_pod: {buffer_pod}")
+            print(f"max_replicas: {settings.max_replicas}")
             print("-----------")
+            print("+")
+            print(f"buffer_pod: {buffer_pod}")
+            print("=========================")
+            print(f"==> pod_to_scale: {pod_to_scale}")
 
-            if current_pods != pods_to_scale:
+            if current_pod_count != pod_to_scale:
                 print(
-                    f"Scaling from {current_pods} to {pods_to_scale}... ({datetime.now().strftime('%H:%M:%S')})"
+                    f"Scaling from {current_pod_count} to {pod_to_scale}... ({datetime.now().strftime('%H:%M:%S')})"
                 )
-                scale_pods(k8s_client, namespace, deployment, pods_to_scale)
-                graph_data.append((datetime.now(), pods_to_scale))
+                scale_pods(k8s_client, namespace, deployment, pod_to_scale)
+                graph_data.append((datetime.now(), pod_to_scale))
             else:
-                print(f"Pods are already scaled to {pods_to_scale}.")
+                print(f"Pods are already scaled to {current_pod_count}.")
         except Exception as e:
             print(f"Error scaling pods: {e}")
+            print(traceback.format_exc())
             break
         else:
             time.sleep(int(scaling_interval_second))
@@ -135,7 +152,7 @@ def scale(ctx, test_duration_second, scaling_interval_second, graph):
     if graph:
         times = [time[0] for time in graph_data]
         values = [time[1] for time in graph_data]
-        generate_graph(times, values)
+        generate_graph(times, values, output_file=output_file)
 
 
 resource.add_command(scale, "scale")

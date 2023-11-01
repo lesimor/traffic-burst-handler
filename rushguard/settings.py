@@ -1,3 +1,5 @@
+import datetime
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -24,4 +26,4 @@ class Settings(BaseSettings):
     qps_time_series_duration: str  # QPS 시계열의 기간
     qps_time_series_step: str  # QPS 시계열의 간격
     qps_mean_window_size: int  # QPS 평균 윈도우 크기
-    traffic_burst_start_timestamp: int
+    traffic_burst_start_timestamp: int = int(datetime.datetime.now().timestamp())

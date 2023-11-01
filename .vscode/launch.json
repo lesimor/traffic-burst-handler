@@ -31,7 +31,9 @@
         "--test-duration-second",
         "${input:testDurationSecond}",
         "--scaling-interval-second",
-        "${input:scalingIntervalSecond}"
+        "${input:scalingIntervalSecond}",
+        "--output-file",
+        "${input:outputFilePath}"
       ],
       "jinja": true,
       "justMyCode": true
@@ -91,6 +93,12 @@
       "type": "promptString",
       "description": "Scaling Interval Second",
       "default": "30"
+    },
+    {
+      "id": "outputFilePath",
+      "type": "promptString",
+      "description": "Output File Path",
+      "default": "${workspaceFolder}/graph.png"
     }
   ]
 }

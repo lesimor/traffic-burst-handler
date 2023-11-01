@@ -44,7 +44,7 @@ def pod_number_by_volatility(traffic_series, settings: Settings) -> int:
         volatility_trend(traffic_series) * settings.qps_capacity_per_pod
     )
 
-    return buffer_pod_by_trend + buffer_pod_by_volatility
+    return max(buffer_pod_by_trend + buffer_pod_by_volatility, 0)
 
 
 def traffic_trend(series, short_period=5, long_period=20) -> float:
