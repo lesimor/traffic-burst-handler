@@ -6,12 +6,12 @@ from datetime import datetime, timedelta
 import click
 
 from rushguard.metric.ingress import get_avg_response_time, get_qps_time_series
-from rushguard.scaler.resource import get_current_pod_count, scale_pods
 from rushguard.settings import Settings
 from rushguard.utils.graph import generate_graph
+from rushguard.utils.resource import get_current_pod_count, scale_pods
 
 from ...metric.resource import get_resource_metrics
-from ...scaler.buffer import buffer_pod_number
+from ...utils.buffer import buffer_pod_number
 
 
 @click.group()
@@ -46,6 +46,8 @@ def scale(ctx, test_duration_second, scaling_interval_second, output_file, graph
             avg_response_time = get_avg_response_time(
                 prometheus_url, ingress, interval=interval
             )
+            if math.isnan(avg_response_time):
+                avg_response_time = 0
             print(
                 f"Average response time for {ingress} over the last {interval}: {avg_response_time} seconds"  # noqa
             )
@@ -102,22 +104,25 @@ def scale(ctx, test_duration_second, scaling_interval_second, output_file, graph
                 required_pod_by_memory,
             )
 
-            buffer_pod = buffer_pod_number(qps_time_series["qps"], settings)
+            pod_elapsed, pod_volatility = buffer_pod_number(
+                qps_time_series["qps"],
+                settings,
+                timedelta(seconds=int(test_duration_second)),
+            )
+            buffer_pod = pod_elapsed + pod_volatility
 
-            adaptive_pod_volume = min(
-                max(
-                    pod_number_by_latency,
-                    pod_number_by_utilization,
-                    required_pod_by_latency,
-                    settings.min_replicas,
-                ),
-                # + buffer_pod,
-                settings.max_replicas,
+            adaptive_pod_volume = max(
+                pod_number_by_latency,
+                pod_number_by_utilization,
+                required_pod_by_latency,
+                settings.min_replicas,
             )
 
             adaptive_pod_history.append(adaptive_pod_volume)
 
-            pod_to_scale = adaptive_pod_volume + buffer_pod
+            pod_to_scale = int(
+                min(adaptive_pod_volume + buffer_pod, settings.max_replicas)
+            )
 
             print("----min----")
             print("----max----")
@@ -130,7 +135,9 @@ def scale(ctx, test_duration_second, scaling_interval_second, output_file, graph
             print(f"max_replicas: {settings.max_replicas}")
             print("-----------")
             print("+")
-            print(f"buffer_pod: {buffer_pod}")
+            print(f"buffer_pod: {buffer_pod} (elapsed + volatility)")
+            print(f"ㄴpod_elapsed: {pod_elapsed}")
+            print(f"ㄴpod_volatility: {pod_volatility}")
             print("=========================")
             print(f"==> pod_to_scale: {pod_to_scale}")
 
@@ -145,14 +152,17 @@ def scale(ctx, test_duration_second, scaling_interval_second, output_file, graph
         except Exception as e:
             print(f"Error scaling pods: {e}")
             print(traceback.format_exc())
-            break
-        else:
+            print("unexpected error, but continue...")
+        finally:
             time.sleep(int(scaling_interval_second))
 
     if graph:
         times = [time[0] for time in graph_data]
         values = [time[1] for time in graph_data]
         generate_graph(times, values, output_file=output_file)
+
+        print("scaling down to min replicas...")
+        scale_pods(k8s_client, namespace, deployment, settings.min_replicas)
 
 
 resource.add_command(scale, "scale")

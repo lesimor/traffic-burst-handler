@@ -39,6 +39,28 @@
       "justMyCode": true
     },
     {
+      "name": "CLI: resource scale v2",
+      "type": "python",
+      "request": "launch",
+      "program": "${workspaceFolder}/rushguard/scaler/resource.py",
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}",
+      "args": [
+        "--env-file",
+        "${input:envFile}",
+        "resource",
+        "scale",
+        "--test-duration-second",
+        "${input:testDurationSecond}",
+        "--scaling-interval-second",
+        "${input:scalingIntervalSecond}",
+        "--output-file",
+        "${input:outputFilePath}"
+      ],
+      "jinja": true,
+      "justMyCode": true
+    },
+    {
       "name": "CLI: get metrics",
       "type": "python",
       "request": "launch",
@@ -65,6 +87,10 @@
         "--host",
         "${input:locustHost}"
       ],
+      "env": {
+        "PATTERN_FILE_PATH": "${input:patternFilePath}",
+        "PATTERN_NAME": "${input:patternName}"
+      },
       "jinja": true,
       "justMyCode": true
     }
@@ -99,6 +125,18 @@
       "type": "promptString",
       "description": "Output File Path",
       "default": "${workspaceFolder}/graph.png"
+    },
+    {
+      "id": "patternFilePath",
+      "type": "promptString",
+      "description": "Pattern file path",
+      "default": "${workspaceFolder}/tests/patterns.csv"
+    },
+    {
+      "id": "patternName",
+      "type": "pickString",
+      "description": "Pattern name",
+      "options": ["p1"]
     }
   ]
 }

@@ -1,6 +1,12 @@
 import math
+import os
 
+import pandas as pd
 from locust import HttpUser, LoadTestShape, constant_throughput, task
+
+pattern_file = os.getenv("PATTERN_FILE_PATH")
+pattern_name = os.getenv("PATTERN_NAME")
+patterns = pd.read_csv(pattern_file, usecols=[pattern_name])
 
 
 class StepLoadShape(LoadTestShape):
@@ -12,30 +18,13 @@ class StepLoadShape(LoadTestShape):
 
         step_time -- Time between steps
         step_load -- User increase amount at each step
-        spawn_rate -- Users to stop/start per second at every step
-        time_limit -- Time limit in seconds
 
     """
 
-    step_time = 30
-    step_load = 10
-    spawn_rate = 10
-    time_limit = 600
+    step_time = 20
+    step_load = 1
 
-    qps = [
-        10,
-        10,
-        100,
-        90,
-        80,
-        70,
-        60,
-        50,
-        40,
-        30,
-        20,
-        10,
-    ]
+    qps = patterns[pattern_name].tolist()
 
     def tick(self):
         run_time = self.get_run_time()

@@ -35,6 +35,7 @@ def generate_graph(times, values, output_file=None):
     plt.tight_layout()
     if output_file:
         plt.savefig(output_file)
+        print(f"Graph saved to {output_file}")
     else:
         plt.show()
 

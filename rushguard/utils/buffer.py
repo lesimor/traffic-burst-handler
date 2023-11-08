@@ -1,38 +1,44 @@
 import datetime  # datetime 모듈을 import
 
-import numpy as np
 import pandas as pd
 
 from rushguard.settings import Settings
+
+from .math import decay_function
 
 
 def buffer_pod_number(
     traffic_series: pd.Series,
     settings: Settings,
+    total_time: datetime.timedelta,
 ) -> int:
     tb_start_timestamp = datetime.datetime.fromtimestamp(
         settings.traffic_burst_start_timestamp
     )
     pod_elapsed = pod_number_by_elapsed_time_after_traffic_burst_started(
         settings,
+        total_time,
         t_start=tb_start_timestamp,
     )
     pod_volatility = pod_number_by_volatility(traffic_series, settings)
 
-    return pod_elapsed + pod_volatility
+    return pod_elapsed, pod_volatility
 
 
 def pod_number_by_elapsed_time_after_traffic_burst_started(
     settings: Settings,
+    total_time: datetime.timedelta,
     t_start=datetime.datetime.now(),
 ) -> int:
     now = datetime.datetime.now()
     if now < t_start:
         return settings.max_pod_number_by_elapsed_time
     elapsed = now - t_start
-    return int(
-        settings.max_pod_number_by_elapsed_time
-        * np.exp(-settings.buffer_exponential_decay_rate * elapsed.total_seconds())
+    return decay_function(
+        elapsed.total_seconds(),
+        settings.max_pod_number_by_elapsed_time,
+        0,
+        total_time.total_seconds(),
     )
 
 
