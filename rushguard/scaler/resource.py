@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 
 from kubernetes import client, config
 
-from rushguard.metric.ingress import get_avg_response_time, get_qps_time_series
+from rushguard.metric.ingress import get_avg_response_time, get_recent_qps_time_series
 from rushguard.metric.resource import get_resource_metrics
 from rushguard.settings import Settings
 from rushguard.utils.buffer import buffer_pod_number
@@ -44,7 +44,7 @@ def scale(_settings, test_duration_second, scaling_interval_second):
         if adaptive_pod_history:
             current_adaptive_pods_volume = adaptive_pod_history[-1]
 
-        qps_time_series = get_qps_time_series(
+        qps_time_series = get_recent_qps_time_series(
             prometheus_url,
             ingress,
             duration=_settings.qps_time_series_duration,

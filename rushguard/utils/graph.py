@@ -16,6 +16,17 @@ def generate_graph(times, values, output_file=None):
     plt.ylabel("Scale")
     plt.grid(True)
 
+    # # 색칠하기
+    # plt.fill_between(times, values, step="post", alpha=0.5)
+
+    # area = 0
+    # for idx, (t, v) in enumerate(zip(times, values)):
+    #     if idx == len(times) - 1:
+    #         continue
+    #     area += (times[idx + 1] - t).seconds * v
+
+    # print(f"Area: {area}")
+
     # x축 레이블을 더 읽기 쉽게 만듭니다.
     plt.gcf().autofmt_xdate()
 

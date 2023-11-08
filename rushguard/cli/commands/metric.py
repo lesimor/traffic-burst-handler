@@ -2,7 +2,7 @@ import click
 
 from rushguard.settings import Settings
 
-from ...metric.ingress import get_avg_response_time, get_qps_time_series
+from ...metric.ingress import get_avg_response_time, get_recent_qps_time_series
 from ...metric.resource import get_resource_metrics
 
 
@@ -15,7 +15,7 @@ def metric(ctx):
     ingress = settings.ingress_name
     qps_time_series_duration = settings.qps_time_series_duration
 
-    qps_series = get_qps_time_series(
+    qps_series = get_recent_qps_time_series(
         prometheus_url, ingress, duration=qps_time_series_duration, step="1s"
     )
     print(qps_series)

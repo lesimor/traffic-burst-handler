@@ -136,7 +136,7 @@
       "id": "patternName",
       "type": "pickString",
       "description": "Pattern name",
-      "options": ["p1"]
+      "options": ["p1", "free"]
     }
   ]
 }

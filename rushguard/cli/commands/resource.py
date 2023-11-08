@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 
 import click
 
-from rushguard.metric.ingress import get_avg_response_time, get_qps_time_series
+from rushguard.metric.ingress import get_avg_response_time, get_recent_qps_time_series
 from rushguard.settings import Settings
 from rushguard.utils.graph import generate_graph
 from rushguard.utils.resource import get_current_pod_count, scale_pods
@@ -59,7 +59,7 @@ def scale(ctx, test_duration_second, scaling_interval_second, output_file, graph
             if adaptive_pod_history:
                 current_adaptive_pods_volume = adaptive_pod_history[-1]
 
-            qps_time_series = get_qps_time_series(
+            qps_time_series = get_recent_qps_time_series(
                 prometheus_url,
                 ingress,
                 duration=settings.qps_time_series_duration,
