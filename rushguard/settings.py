@@ -8,7 +8,8 @@ class Settings(BaseSettings):
         env_file=".env", env_prefix="rushguard_"
     )  # .env 파일을 사용하여 설정을 로드하고, 환경 변수의 접두사를 "rushguard_"로 지정하는 설정 딕셔너리
 
-    prometheus_url: str  # 프로메테우스 URL
+    ingress_metric_url: str  # 프로메테우스 URL (ingress)
+    resource_metric_url: str  # 프로메테우스 URL (resource)
     kube_context: str  # 쿠버네티스 컨텍스트
     kube_namespace: str  # 쿠버네티스 네임스페이스
     kube_deployment: str  # 쿠버네티스 디플로이먼트

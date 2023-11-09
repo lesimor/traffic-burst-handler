@@ -1,9 +1,13 @@
+from datetime import datetime, timedelta
+
+import pandas as pd
 from kubernetes import client, config
+from prometheus_api_client import PrometheusConnect
 
-from ..settings import Settings
+from rushguard.settings import Settings
 
 
-def get_resource_metrics(settings: Settings):
+def get_resource_utility_metrics(settings: Settings):
     # 파드의 CPU 및 메모리 사용량을 조회하기 위해 메트릭 API를 사용합니다.
     # 메트릭 서버가 필요합니다.
     api_instance = client.CustomObjectsApi()
@@ -51,3 +55,32 @@ def get_resource_metrics(settings: Settings):
     avg_memory_usage = sum(memory_usages) / len(memory_usages)
 
     return avg_cpu_usage, avg_memory_usage
+
+
+def get_pod_count_time_series(
+    prom_url, namespace, start_time, end_time, step="1m"
+) -> pd.DataFrame:
+    query = f"count(kube_pod_info{{namespace='{namespace}'}})"
+
+    prom = PrometheusConnect(url=prom_url, disable_ssl=True)
+
+    data = prom.custom_query_range(
+        query, start_time=start_time, end_time=end_time, step=step
+    )
+
+    values = data[0]["values"]
+    datetimes = [datetime.fromtimestamp(_timestamp) for _timestamp, _ in values]
+    pod_count_list = [float(pod_count) for _, pod_count in values]
+    df = pd.DataFrame({"datetime": datetimes, "pod_count": pod_count_list})
+    return df
+
+
+if __name__ == "__main__":
+    print(
+        get_pod_count_time_series(
+            "http://kaist-prometheus.dchain-connect.com",
+            "webeng",
+            datetime.now() - timedelta(seconds=60),
+            datetime.now(),
+        )
+    )

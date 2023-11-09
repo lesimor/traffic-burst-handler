@@ -10,7 +10,7 @@ from rushguard.settings import Settings
 from rushguard.utils.graph import generate_graph
 from rushguard.utils.resource import get_current_pod_count, scale_pods
 
-from ...metric.resource import get_resource_metrics
+from ...metric.resource import get_resource_utility_metrics
 from ...utils.buffer import buffer_pod_number
 
 
@@ -30,7 +30,7 @@ def scale(ctx, test_duration_second, scaling_interval_second, output_file, graph
     settings: Settings = ctx.obj["settings"]
 
     k8s_client = ctx.obj["k8s_client"]
-    prometheus_url = settings.prometheus_url
+    prometheus_url = settings.ingress_metric_url
     ingress = settings.ingress_name
     interval = settings.avg_rt_duration
     namespace = settings.kube_namespace
@@ -77,7 +77,7 @@ def scale(ctx, test_duration_second, scaling_interval_second, output_file, graph
             (
                 current_avg_cpu_usage_nano_second,
                 current_avg_memory_usage_kilobyte,
-            ) = get_resource_metrics(settings=settings)
+            ) = get_resource_utility_metrics(settings=settings)
             cpu_usage_limit_nano_second = settings.cpu_utilization_threshold_second * (
                 2**30
             )

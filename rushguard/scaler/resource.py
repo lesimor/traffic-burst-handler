@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 from kubernetes import client, config
 
 from rushguard.metric.ingress import get_avg_response_time, get_recent_qps_time_series
-from rushguard.metric.resource import get_resource_metrics
+from rushguard.metric.resource import get_resource_utility_metrics
 from rushguard.settings import Settings
 from rushguard.utils.buffer import buffer_pod_number
 from rushguard.utils.graph import generate_graph
@@ -17,11 +17,11 @@ adaptive_pod_history = []
 graph_data = []
 
 
-def scale(_settings, test_duration_second, scaling_interval_second):
+def scale(_settings: Settings, test_duration_second, scaling_interval_second):
     config.load_kube_config(context=_settings.kube_context)
 
     k8s_client = client.AppsV1Api()
-    prometheus_url = _settings.prometheus_url
+    prometheus_url = _settings.ingress_metric_url
     ingress = _settings.ingress_name
     interval = _settings.avg_rt_duration
     namespace = _settings.kube_namespace
@@ -60,7 +60,7 @@ def scale(_settings, test_duration_second, scaling_interval_second):
         (
             current_avg_cpu_usage_nano_second,
             current_avg_memory_usage_kilobyte,
-        ) = get_resource_metrics(settings=_settings)
+        ) = get_resource_utility_metrics(settings=_settings)
         cpu_usage_limit_nano_second = _settings.cpu_utilization_threshold_second * (
             2**30
         )
